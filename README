@@ -1,0 +1,15 @@
+All:
+    esc to exit
+    [ to zoom out (dim up)
+    ] to zoom in (dim down)
+    - fov down
+    = fov up
+    Arrow keys move camera
+    l light on/off
+    s stop/start the light movement
+    . rotate light clockwise
+    , rotate light counterclockwise
+    9 lower light height
+    0 raise light height
+
+I spent around 3.5 hours on this assignment.
