@@ -21,11 +21,11 @@
 #define RES 1
 #endif
 
-int th=0, ph=0, fov=55, height=9*50, width=16*50, 
+int th=0, ph=0, fov=55, height=15*50, width=15*50, 
 lightOn=1, ambient=30, diffuse=100, specular=0, emission=00,
-distance=7, zh=90, inc=10, move=1;
-double asp=1, dim=9, shiny=1, ylight=3;
-unsigned int grass, rock, cobblestone;
+distance=10, zh=90, inc=10, move=1, mode=22;
+double asp=1, dim=10, shiny=1, ylight=3, eyeX, eyeZ;
+unsigned int grass, rock, cobblestone, map;
 
 #define Cos(th) cos(3.14159265/180*(th))
 #define Sin(th) sin(3.14159265/180*(th))
@@ -157,6 +157,2283 @@ unsigned int LoadTexBMP(const char* file)
    return texture;
 }
 
+void Square(double x, double y, double z){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    // glEnable(GL_TEXTURE_2D);
+    // glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    // glBindTexture(GL_TEXTURE_2D,grass);
+    glColor3f(0.21, 0.39, 0.12);
+    glBegin(GL_QUADS);
+    glNormal3f(0,1,0);
+    glTexCoord2f(0,0); glVertex3f(0,0,0);
+    glTexCoord2f(1,0); glVertex3f(2,0,0);
+    glTexCoord2f(1,1); glVertex3f(2,0,2);
+    glTexCoord2f(0,1); glVertex3f(0,0,2);
+    glEnd();
+    glPopMatrix();
+    // glDisable(GL_TEXTURE_2D);
+}
+
+void betterGround(){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    
+    glColor3f(1,1,1);
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(0,0,0);
+    glVertex3f(30,0,0);
+    glVertex3f(30,0,-30);
+    glVertex3f(0,0,-30);
+    glEnd();
+    for(int i=0; i<30;i+=2){
+        for(int j=2; j<=30;j+=2)
+            Square(i,0,-j);
+    }
+}
+
+void baseWalls(double x, double y, double z, double th, double ph){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glRotated(ph,1,0,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(1.5,0,0);
+    glVertex3f(1.5,0,0.4);
+    glVertex3f(0,0,0.4);
+    glEnd();
+
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.5,0.8,0);
+    glVertex3f(1.5,0.8,0.4);
+    glVertex3f(0,0.8,0.4);
+    glEnd();
+
+    //sides
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.5,0,0);
+    glVertex3f(1.5,0.8,0);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(1.5,0,0.4);
+    glVertex3f(1.5,0.8,0.4);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(0,0,0.4);
+    glVertex3f(0,0.8,0.4);
+    //left
+    glNormal3f(1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+
+
+    glPopMatrix();
+}
+
+void red1(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(2,0,0);
+    glVertex3f(2.5,0,0.5);
+    glVertex3f(0.5,0,1.7);
+    glVertex3f(0,0,1.5);
+    glEnd();
+
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(2,0.8,0);
+    glVertex3f(2.5,0.8,0.5);
+    glVertex3f(0.5,0.8,1.7);
+    glVertex3f(0,0.8,1.5);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(2,0,0);
+    glVertex3f(2,0.8,0);
+    //backright
+    glNormal3f(1,0,-1);
+    glVertex3f(2.5,0,0.5);
+    glVertex3f(2.5,0.8,0.5);
+    //frontright
+    glNormal3f(0.5,0,1);
+    glVertex3f(0.5,0,1.7);
+    glVertex3f(0.5,0.8,1.7);
+    //frontleft
+    glNormal3f(-1,0,1);
+    glVertex3f(0,0,1.5);
+    glVertex3f(0,0.8,1.5);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+
+    glEnd();
+    glPopMatrix();
+}
+
+void red2(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.75,0,1.25);
+    glVertex3f(0,0,1.5);
+    glVertex3f(0,0,3);
+    glVertex3f(-0.8,0,3);
+    glVertex3f(-0.8,0,0.3);
+    glEnd();
+
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.75,0.8,1.25);
+    glVertex3f(0,0.8,1.5);
+    glVertex3f(0,0.8,3);
+    glVertex3f(-0.8,0.8,3);
+    glVertex3f(-0.8,0.8,0.3);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //backright
+    glNormal3f(1,0,-0.5);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.75,0,1.25);
+    glVertex3f(0.75,0.8,1.25);
+    //frontright
+    glNormal3f(0.1,0,1);
+    glVertex3f(0,0,1.5);
+    glVertex3f(0,0.8,1.5);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(0,0,3);
+    glVertex3f(0,0.8,3);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(-0.8,0,3);
+    glVertex3f(-0.8,0.8,3);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(-0.8,0,0.3);
+    glVertex3f(-0.8,0.8,0.3);
+    //backleft
+    glNormal3f(-0.5,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void red3(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(2.5,0,0);
+    glVertex3f(2.5,0,0.8);
+    glVertex3f(0.8,0,0.5);
+    glEnd();
+    //bottomleft
+    glBegin(GL_POLYGON);
+    glVertex3f(0.8,0,0.5);
+    glVertex3f(0,0,2);
+    glVertex3f(0.3,0,2.2);
+    glVertex3f(1.3,0,0.5);
+    glEnd();
+    //bottomright
+    glBegin(GL_POLYGON);
+    glVertex3f(2.5,0,0.8);
+    glVertex3f(2.5,0,2.7);
+    glVertex3f(2.3,0,2.75);
+    glVertex3f(2,0,2.4);
+    glVertex3f(2.1,0,2);
+    glVertex3f(1.9,0,0.5);
+    glEnd();
+
+    //topback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(2.5,0.8,0);
+    glVertex3f(2.5,0.8,0.8);
+    glVertex3f(0.8,0.8,0.5);
+    glEnd();
+    //topleft
+    glBegin(GL_POLYGON);
+    glVertex3f(0.8,0.8,0.5);
+    glVertex3f(0,0.8,2);
+    glVertex3f(0.3,0.8,2.2);
+    glVertex3f(1.3,0.8,0.5);
+    glEnd();
+    //topright
+    glBegin(GL_POLYGON);
+    glVertex3f(2.5,0.8,0.8);
+    glVertex3f(2.5,0.8,2.7);
+    glVertex3f(2.3,0.8,2.75);
+    glVertex3f(2,0.8,2.4);
+    glVertex3f(2.1,0.8,2);
+    glVertex3f(1.9,0.8,0.5);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(2.5,0,0);
+    glVertex3f(2.5,0.8,0);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(2.5,0,2.7);
+    glVertex3f(2.5,0.8,2.7);
+    //frontrightright
+    glNormal3f(0.1,0,1);
+    glVertex3f(2.3,0,2.75);
+    glVertex3f(2.3,0.8,2.75);
+    //frontrightleft
+    glNormal3f(-1,0,1);
+    glVertex3f(2,0,2.4);
+    glVertex3f(2,0.8,2.4);
+    //infrontright
+    glNormal3f(-1,0,-0.5);
+    glVertex3f(2.1,0,2);
+    glVertex3f(2.1,0.8,2);
+    //inright
+    glNormal3f(-1,0,0.1);
+    glVertex3f(1.925,0,0.6845);
+    glVertex3f(1.925,0.8,0.6845);
+    //inback
+    glNormal3f(0,0,1);
+    glVertex3f(1.2605,0,0.5722);
+    glVertex3f(1.2605,0.8,0.5722);
+    //inleft
+    glNormal3f(1,0,0.5);
+    glVertex3f(0.3,0,2.2);
+    glVertex3f(0.3,0.8,2.2);
+    //front left
+    glNormal3f(-1,0,1);
+    glVertex3f(0,0,2);
+    glVertex3f(0,0.8,2);
+    //leftfront
+    glNormal3f(-1,0,-0.5);
+    glVertex3f(0.8,0,0.5);
+    glVertex3f(0.8,0.8,0.5);
+    //leftback
+    glNormal3f(-0.4,0,1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+
+    glPopMatrix();
+}
+
+void red4(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomtop
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.6,0,0);
+    glVertex3f(1.2,0,-1);
+    glVertex3f(1,0,-1.2);
+    glVertex3f(0.4,0,-1.2);
+    glVertex3f(0.2,0,-0.8);
+    glEnd();
+    //bottombottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.2,0,1.4);
+    glVertex3f(0.6,0,1.6);
+    glVertex3f(1,0,1.4);
+    glVertex3f(0.6,0,0);
+    glEnd();
+
+    //toptop
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.6,0.8,0);
+    glVertex3f(1.2,0.8,-1);
+    glVertex3f(1,0.8,-1.2);
+    glVertex3f(0.4,0.8,-1.2);
+    glVertex3f(0.2,0.8,-0.8);
+    glEnd();
+    //topbottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.2,0.8,1.4);
+    glVertex3f(0.6,0.8,1.6);
+    glVertex3f(1,0.8,1.4);
+    glVertex3f(0.6,0.8,0);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //leftmid
+    glNormal3f(-1,0,-0.1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.2,0,-0.8);
+    glVertex3f(0.2,0.8,-0.8);
+    //lefttop
+    glNormal3f(-1,0,-0.2);
+    glVertex3f(0.4,0,-1.2);
+    glVertex3f(0.4,0.8,-1.2);
+    //top
+    glNormal3f(0,0,-1);
+    glVertex3f(1,0,-1.2);
+    glVertex3f(1,0.8,-1.2);
+    //topright
+    glNormal3f(0.9,0,-1);
+    glVertex3f(1.2,0,-1);
+    glVertex3f(1.2,0.8,-1);
+    //righttop
+    glNormal3f(1,0,0.6);
+    glVertex3f(0.6,0,0);
+    glVertex3f(0.6,0.8,0);
+    //rightbot
+    glNormal3f(1,0,-0.2);
+    glVertex3f(1,0,1.4);
+    glVertex3f(1,0.8,1.4);
+    //bottomright
+    glNormal3f(0.2,0,1);
+    glVertex3f(0.6,0,1.6);
+    glVertex3f(0.6,0.8,1.6);
+    //bottomleft
+    glNormal3f(-0.2,0,1);
+    glVertex3f(0.2,0,1.4);
+    glVertex3f(0.2,0.8,1.4);
+    //rightbottom
+    glNormal3f(-1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void red5(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(1.6,0,-0.1);
+    glVertex3f(3.2,0,1);
+    glVertex3f(3.2,0,1.2);
+    glVertex3f(0.2,0,1.2);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.6,0.8,-0.1);
+    glVertex3f(3.2,0.8,1);
+    glVertex3f(3.2,0.8,1.2);
+    glVertex3f(0.2,0.8,1.2);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.6,0,-0.1);
+    glVertex3f(1.6,0.8,-0.1);
+    //backright
+    glNormal3f(0.9,0,-1);
+    glVertex3f(3.2,0,1);
+    glVertex3f(3.2,0.8,1);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(3.2,0,1.2);
+    glVertex3f(3.2,0.8,1.2);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(0.2,0,1.2);
+    glVertex3f(0.2,0.8,1.2);
+    //left
+    glNormal3f(-1,0,0.02);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void red6(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomleft
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(1.3,0,-0.3);
+    glVertex3f(1.9,0,-0.3);
+    glVertex3f(0.4,0,1);
+    glVertex3f(0,0,0.6);
+    glEnd();
+    //bottommidleft
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(1.9,0,-0.3);
+    glVertex3f(2.9,0,-0.3);
+    glVertex3f(3.3,0,0.5);
+    glVertex3f(0.85,0,0.4);
+    glEnd();
+    //bottommidright
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(3.3,0,0.5);
+    glVertex3f(3,0,1.4);
+    glVertex3f(2.2,0,1.2);
+    glVertex3f(2,0,0.43);
+    glEnd();
+    //bottomright
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(3,0,1.4);
+    glVertex3f(2.5,0,2);
+    glVertex3f(1.8,0,2);
+    glVertex3f(1.7,0,1.8);
+    glVertex3f(2.2,0,1.2);
+    glEnd();
+    //topleft
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.3,0.8,-0.3);
+    glVertex3f(1.9,0.8,-0.3);
+    glVertex3f(0.4,0.8,1);
+    glVertex3f(0,0.8,0.6);
+    glEnd();
+    //topmidleft
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(1.9,0.8,-0.3);
+    glVertex3f(2.9,0.8,-0.3);
+    glVertex3f(3.3,0.8,0.5);
+    glVertex3f(0.85,0.8,0.4);
+    glEnd();
+    //topmidright
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(3.3,0.8,0.5);
+    glVertex3f(3,0.8,1.4);
+    glVertex3f(2.2,0.8,1.2);
+    glVertex3f(2,0.8,0.43);
+    glEnd();
+    //topright
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(3,0.8,1.4);
+    glVertex3f(2.5,0.8,2);
+    glVertex3f(1.8,0.8,2);
+    glVertex3f(1.7,0.8,1.8);
+    glVertex3f(2.2,0.8,1.2);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //backleft
+    glNormal3f(-0.1,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.3,0,-0.3);
+    glVertex3f(1.3,0.8,-0.3);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(2.9,0,-0.3);
+    glVertex3f(2.9,0.8,-0.3);
+    //backright
+    glNormal3f(1,0,-0.9);
+    glVertex3f(3.3,0,0.5);
+    glVertex3f(3.3,0.8,0.5);
+    //right
+    glNormal3f(1,0,0.2);
+    glVertex3f(3,0,1.4);
+    glVertex3f(3,0.8,1.4);
+    //rightfront
+    glNormal3f(1,0,1);
+    glVertex3f(2.5,0,2);
+    glVertex3f(2.5,0.8,2);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(1.8,0,2);
+    glVertex3f(1.8,0.8,2);
+    //frontleft
+    glNormal3f(-1,0,0.8);
+    glVertex3f(1.7,0,1.8);
+    glVertex3f(1.7,0.8,1.8);
+    //inrightfront
+    glNormal3f(-1,0,-1);
+    glVertex3f(2.2,0,1.2);
+    glVertex3f(2.2,0.8,1.2);
+    //inrightback
+    glNormal3f(-1,0,0.1);
+    glVertex3f(2,0,0.44);
+    glVertex3f(2,0.8,0.44);
+    //inback
+    glNormal3f(0,0,1);
+    glVertex3f(1.09,0,0.4);
+    glVertex3f(1.09,0.8,0.4);
+    //inleft
+    glNormal3f(1,0,1);
+    glVertex3f(0.4,0,1);
+    glVertex3f(0.4,0.8,1);
+    //leftfront
+    glNormal3f(-1,0,1);
+    glVertex3f(0,0,0.6);
+    glVertex3f(0,0.8,0.6);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void red7(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomright
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(2.2,0,-0.1);
+    glVertex3f(2.7,0,-0.4);
+    glVertex3f(3.4,0,0.05);
+    glVertex3f(4.4,0,0.1);
+    glVertex3f(5.4,0,0.4);
+    glVertex3f(5.45,0,0.6);
+    glVertex3f(5.4,0,0.7);
+    glVertex3f(3.4,0,0.5);
+    glVertex3f(2.4,0,1.1);
+    glVertex3f(2.1,0,1.1);
+    glVertex3f(2.05,0,0.7);
+    glVertex3f(1.8,0,0.4);
+    glVertex3f(1.15,0,0.45);
+    glEnd();
+    //bottomleft
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(1,0,0.05);
+    glVertex3f(1.15,0,0.45);
+    glVertex3f(0.8,0,0.7);
+    glVertex3f(0.85,0,1.1);
+    glVertex3f(0.8,0,1.1);
+    glVertex3f(0.4,0,1.25);
+    glVertex3f(0.1,0,1.25);
+    glVertex3f(-0.15,0,1);
+    glVertex3f(-0.2,0,0.3);
+    glEnd();
+    //bottommiddle
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(1,0,0.05);
+    glVertex3f(2.2,0,-0.1);
+    glVertex3f(1.15,0,0.45);
+    glEnd();
+
+    //topright
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(2.2,0.8,-0.1);
+    glVertex3f(2.7,0.8,-0.4);
+    glVertex3f(3.4,0.8,0.05);
+    glVertex3f(4.4,0.8,0.1);
+    glVertex3f(5.4,0.8,0.4);
+    glVertex3f(5.45,0.8,0.6);
+    glVertex3f(5.4,0.8,0.7);
+    glVertex3f(3.4,0.8,0.5);
+    glVertex3f(2.4,0.8,1.1);
+    glVertex3f(2.1,0.8,1.1);
+    glVertex3f(2.05,0.8,0.7);
+    glVertex3f(1.8,0.8,0.4);
+    glVertex3f(1.15,0.8,0.45);
+    glEnd();
+    //topleft
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1,0.8,0.05);
+    glVertex3f(1.15,0.8,0.45);
+    glVertex3f(0.8,0.8,0.7);
+    glVertex3f(0.85,0.8,1.1);
+    glVertex3f(0.8,0.8,1.1);
+    glVertex3f(0.4,0.8,1.25);
+    glVertex3f(0.1,0.8,1.25);
+    glVertex3f(-0.15,0.8,1);
+    glVertex3f(-0.2,0.8,0.3);
+    glEnd();
+    //topmiddle
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(1,0.8,0.05);
+    glVertex3f(2.2,0.8,-0.1);
+    glVertex3f(1.15,0.8,0.45);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //backleft
+    glNormal3f(0.1,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1,0,0.05);
+    glVertex3f(1,0.8,0.05);
+
+    glNormal3f(-0.1,0,-1);
+    glVertex3f(2.2,0,-0.1);
+    glVertex3f(2.2,0.8,-0.1);
+
+    glNormal3f(-0.7,0,-1);
+    glVertex3f(2.7,0,-0.4);
+    glVertex3f(2.7,0.8,-0.4);
+    //backright
+    glNormal3f(1,0,-0.9);
+    glVertex3f(3.4,0,0.05);
+    glVertex3f(3.4,0.8,0.05);
+
+    glNormal3f(0.05,0,-1);
+    glVertex3f(4.4,0,0.1);
+    glVertex3f(4.4,0.8,0.1);
+
+    glNormal3f(0.1,0,-1);
+    glVertex3f(5.4,0,0.4);
+    glVertex3f(5.4,0.8,0.4);
+    //right
+    glNormal3f(1,0,-0.05);
+    glVertex3f(5.45,0,0.6);
+    glVertex3f(5.45,0.8,0.6);
+
+    glNormal3f(1,0,-0.075);
+    glVertex3f(5.4,0,0.7);
+    glVertex3f(5.4,0.8,0.7);
+    //frontright
+    glNormal3f(-0.05,0,1);
+    glVertex3f(3.4,0,0.5);
+    glVertex3f(3.4,0.8,0.5);
+
+    glNormal3f(0.8,0,1);
+    glVertex3f(2.4,0,1.1);
+    glVertex3f(2.4,0.8,1.1);
+
+    glNormal3f(0,0,1);
+    glVertex3f(2.1,0,1.1);
+    glVertex3f(2.1,0.8,1.1);
+    //inright
+    glNormal3f(-1,0,0.02);
+    glVertex3f(2.05,0,0.7);
+    glVertex3f(2.05,0.8,0.7);
+
+    glNormal3f(-1,0,0.8);
+    glVertex3f(1.8,0,0.4);
+    glVertex3f(1.8,0.8,0.4);
+    //inmiddle
+    glNormal3f(0.01,0,1);
+    glVertex3f(1.15,0,0.45);
+    glVertex3f(1.15,0.8,0.45);
+    //inleft
+    glNormal3f(0.8,0,1);
+    glVertex3f(0.8,0,0.7);
+    glVertex3f(0.8,0.8,0.7);
+
+    glNormal3f(1,0,-0.01);
+    glVertex3f(0.85,0,1.1);
+    glVertex3f(0.85,0.8,1.1);
+    //frontleft
+    glNormal3f(0,0,1);
+    glVertex3f(0.8,0,1.1);
+    glVertex3f(0.8,0.8,1.1);
+
+    glNormal3f(0.2,0,1);
+    glVertex3f(0.4,0,1.25);
+    glVertex3f(0.4,0.8,1.25);
+
+    glNormal3f(0,0,1);
+    glVertex3f(0.1,0,1.25);
+    glVertex3f(0.1,0.8,1.25);
+
+    glNormal3f(-1,0,1);
+    glVertex3f(-0.15,0,1);
+    glVertex3f(-0.15,0.8,1);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(-0.2,0,0.3);
+    glVertex3f(-0.2,0.8,0.3);
+
+    glNormal3f(-1,0,-0.8);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void red8(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0.2,0,0.1);
+    glVertex3f(1.3,0,0);
+    glVertex3f(1.8,0,0.3);
+    glVertex3f(1.8,0,0.5);
+    glVertex3f(0,0,0.5);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0.1);
+    glVertex3f(1.3,0.8,0);
+    glVertex3f(1.8,0.8,0.3);
+    glVertex3f(1.8,0.8,0.5);
+    glVertex3f(0,0.8,0.5);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(-0.05,0,-1);
+    glVertex3f(0,0,0.1);
+    glVertex3f(0,0.8,0.1);
+    glVertex3f(1.3,0,0);
+    glVertex3f(1.3,0.8,0);
+    //backright
+    glNormal3f(1,0,-1);
+    glVertex3f(1.8,0,0.3);
+    glVertex3f(1.8,0.8,0.3);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(1.8,0,0.5);
+    glVertex3f(1.8,0.8,0.5);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(0,0,0.5);
+    glVertex3f(0,0.8,0.5);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(0,0,0.1);
+    glVertex3f(0,0.8,0.1);
+    glEnd();
+    glPopMatrix();
+}
+
+void red9(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.9,0,0);
+    glVertex3f(2.7,0,0.4);
+    glVertex3f(2.7,0,0.8);
+    glVertex3f(0.5,0,0.8);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.9,0.8,0);
+    glVertex3f(2.7,0.8,0.4);
+    glVertex3f(2.7,0.8,0.8);
+    glVertex3f(0.5,0.8,0.8);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //backleft
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.9,0,0);
+    glVertex3f(0.9,0.8,0);
+    //backright
+    glNormal3f(0.5,0,-1);
+    glVertex3f(2.7,0,0.4);
+    glVertex3f(2.7,0.8,0.4);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(2.7,0,0.8);
+    glVertex3f(2.7,0.8,0.8);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(0.5,0,0.8);
+    glVertex3f(0.5,0.8,0.8);
+    //left
+    glNormal3f(-1,0,0.4);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void red10(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(1,0,-0.1);
+    glVertex3f(2.4,0,1);
+    glVertex3f(2.4,0,1.2);
+    glVertex3f(2,0,2);
+    glVertex3f(1.2,0,2.3);
+    glVertex3f(0,0,0.4);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1,0.8,-0.1);
+    glVertex3f(2.4,0.8,1);
+    glVertex3f(2.4,0.8,1.2);
+    glVertex3f(2,0.8,2);
+    glVertex3f(1.2,0.8,2.3);
+    glVertex3f(0,0.8,0.4);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(-0.05,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1,0,-0.1);
+    glVertex3f(1,0.8,-0.1);
+    //rightback
+    glNormal3f(1,0,-1);
+    glVertex3f(2.4,0,1);
+    glVertex3f(2.4,0.8,1);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(2.4,0,1.2);
+    glVertex3f(2.4,0.8,1.2);
+    //rightfront
+    glNormal3f(1,0,0.8);
+    glVertex3f(2,0,2);
+    glVertex3f(2,0.8,2);
+    //frontright
+    glNormal3f(0.2,0,1);
+    glVertex3f(1.2,0,2.3);
+    glVertex3f(1.2,0.8,2.3);
+    //leftfront
+    glNormal3f(-1,0,0.4);
+    glVertex3f(0,0,0.4);
+    glVertex3f(0,0.8,0.4);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue1(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,3.4);
+    glVertex3f(0,0,0);
+    glVertex3f(1.2,0,0.5);
+    glVertex3f(1.2,0,2.85);
+    glVertex3f(1.4,0,3);
+    glVertex3f(1.4,0,3.2);
+    glVertex3f(1.1,0,3.4);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,3.4);
+    glVertex3f(0,0.8,0);
+    glVertex3f(1.2,0.8,0.5);
+    glVertex3f(1.2,0.8,2.85);
+    glVertex3f(1.4,0.8,3);
+    glVertex3f(1.4,0.8,3.2);
+    glVertex3f(1.1,0.8,3.4);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //left
+    glNormal3f(-1,0,-0.01);
+    glVertex3f(0,0,3.4);
+    glVertex3f(0,0.8,3.4);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    //back
+    glNormal3f(0.4,0,-1);
+    glVertex3f(1.2,0,0.5);
+    glVertex3f(1.2,0.8,0.5);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(1.2,0,2.85);
+    glVertex3f(1.2,0.8,2.85);
+    //rightnub
+    glNormal3f(0.4,0,-1);
+    glVertex3f(1.4,0,3);
+    glVertex3f(1.4,0.8,3);
+
+    glNormal3f(1,0,0);
+    glVertex3f(1.4,0,3.2);
+    glVertex3f(1.4,0.8,3.2);
+
+    glNormal3f(1,0,1);
+    glVertex3f(1.1,0,3.4);
+    glVertex3f(1.1,0.8,3.4);
+    //front
+    glNormal3f(0,0,1);
+    glVertex3f(0,0,3.4);
+    glVertex3f(0,0.8,3.4);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue2(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(-0.5,0,0.9);
+    glVertex3f(-0.3,0,0.1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0,1.1);
+    glVertex3f(0.7,0,2.1);
+    glVertex3f(0,0,1.8);
+    glVertex3f(-0.4,0,1.5);
+    glEnd();
+    //bottomfront
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(1.2,0,3.6);
+    glVertex3f(-0.1,0,2.8);
+    glVertex3f(-0.1,0,2.6);
+    glVertex3f(0.1,0,2.3);
+    glVertex3f(0,0,1.8);
+    glVertex3f(0.7,0,2.1);
+    glVertex3f(1.9,0,2.8);
+    glVertex3f(3.1,0,2.4);
+    glVertex3f(3.6,0,2.8);
+    glVertex3f(2,0,4.3);
+    glEnd();
+
+    //topback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(-0.5,0.8,0.9);
+    glVertex3f(-0.3,0.8,0.1);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0,0.8,1.1);
+    glVertex3f(0.7,0.8,2.1);
+    glVertex3f(0,0.8,1.8);
+    glVertex3f(-0.4,0.8,1.5);
+    glEnd();
+    //topfront
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(1.2,0.8,3.6);
+    glVertex3f(-0.1,0.8,2.8);
+    glVertex3f(-0.1,0.8,2.6);
+    glVertex3f(0.1,0.8,2.3);
+    glVertex3f(0,0.8,1.8);
+    glVertex3f(0.7,0.8,2.1);
+    glVertex3f(1.9,0.8,2.8);
+    glVertex3f(3.1,0.8,2.4);
+    glVertex3f(3.6,0.8,2.8);
+    glVertex3f(2,0.8,4.3);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //topcurve
+    glNormal3f(1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0,0,1.1);
+    glVertex3f(0,0.8,1.1);
+
+    glNormal3f(1,0,-1);
+    glVertex3f(0.7,0,2.1);
+    glVertex3f(0.7,0.8,2.1);
+
+    glNormal3f(0.1,0,-1);
+    glVertex3f(1.9,0,2.8);
+    glVertex3f(1.9,0.8,2.8);
+
+    glNormal3f(-0.2,0,-1);
+    glVertex3f(3.1,0,2.4);
+    glVertex3f(3.1,0.8,2.4);
+
+    glNormal3f(0.5,0,-1);
+    glVertex3f(3.6,0,2.8);
+    glVertex3f(3.6,0.8,2.8);
+    //right
+    glNormal3f(1,0,1);
+    glVertex3f(2,0,4.3);
+    glVertex3f(2,0.8,4.3);
+    //bottom
+    glNormal3f(-0.7,0,1);
+    glVertex3f(1.2,0,3.6);
+    glVertex3f(1.2,0.8,3.6);
+
+    glNormal3f(-0.1,0,1);
+    glVertex3f(-0.1,0,2.8);
+    glVertex3f(-0.1,0.8,2.8);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(-0.1,0,2.6);
+    glVertex3f(-0.1,0.8,2.6);
+
+    glNormal3f(-1,0,-0.3);
+    glVertex3f(0.1,0,2.3);
+    glVertex3f(0.1,0.8,2.3);
+
+    glNormal3f(-1,0,0.1);
+    glVertex3f(0,0,1.8);
+    glVertex3f(0,0.8,1.8);
+
+    glNormal3f(-0.9,0,1);
+    glVertex3f(-0.4,0,1.5);
+    glVertex3f(-0.4,0.8,1.5);
+
+    glNormal3f(-1,0,0.1);
+    glVertex3f(-0.5,0,0.9);
+    glVertex3f(-0.5,0.8,0.9);
+
+    glNormal3f(-1,0,-0.3);
+    glVertex3f(-0.3,0,0.1);
+    glVertex3f(-0.3,0.8,0.1);
+
+    glNormal3f(-0.2,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue3(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(1.5,0,0.4);
+    glVertex3f(1.6,0,1.1);
+    glVertex3f(1.2,0,1.5);
+    glVertex3f(0.75,0,1.7);
+    glVertex3f(0.4,0,1.5);
+    glVertex3f(0.7,0,1);
+    glVertex3f(0.65,0,0.8);
+    glVertex3f(0.4,0,0.6);
+    glVertex3f(-0.6,0,0.6);
+    glVertex3f(-0.7,0,0.35);
+    glVertex3f(0,0,0);
+    glVertex3f(0.8,0,0);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(1.5,0.8,0.4);
+    glVertex3f(1.6,0.8,1.1);
+    glVertex3f(1.2,0.8,1.5);
+    glVertex3f(0.75,0.8,1.7);
+    glVertex3f(0.4,0.8,1.5);
+    glVertex3f(0.7,0.8,1);
+    glVertex3f(0.65,0.8,0.8);
+    glVertex3f(0.4,0.8,0.6);
+    glVertex3f(-0.6,0.8,0.6);
+    glVertex3f(-0.7,0.8,0.35);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.8,0.8,0);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.8,0,0);
+    glVertex3f(0.8,0.8,0);
+    //backright
+    glNormal3f(0.8,0,-1);
+    glVertex3f(1.5,0,0.4);
+    glVertex3f(1.5,0.8,0.4);
+    //right
+    glNormal3f(1,0,-0.05);
+    glVertex3f(1.6,0,1.1);
+    glVertex3f(1.6,0.8,1.1);
+    
+    glNormal3f(1,0,1);
+    glVertex3f(1.2,0,1.5);
+    glVertex3f(1.2,0.8,1.5);
+
+    glNormal3f(0.3,0,1);
+    glVertex3f(0.75,0,1.7);
+    glVertex3f(0.75,0.8,1.7);
+    //front
+    glNormal3f(-0.7,0,1);
+    glVertex3f(0.4,0,1.5);
+    glVertex3f(0.4,0.8,1.5);
+    //inside
+    glNormal3f(-1,0,-0.5);
+    glVertex3f(0.7,0,1);
+    glVertex3f(0.7,0.8,1);
+
+    glNormal3f(-1,0,0.1);
+    glVertex3f(0.65,0,0.8);
+    glVertex3f(0.65,0.8,0.8);
+
+    glNormal3f(-1,0,1);
+    glVertex3f(0.4,0,0.6);
+    glVertex3f(0.4,0.8,0.6);
+
+    glNormal3f(0,0,1);
+    glVertex3f(-0.6,0,0.6);
+    glVertex3f(-0.6,0.8,0.6);
+    //left
+    glNormal3f(-1,0,0.2);
+    glVertex3f(-0.7,0,0.35);
+    glVertex3f(-0.7,0.8,0.35);
+
+    glNormal3f(-0.7,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue4(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(2,0,1.2);
+    glVertex3f(0.6,0,2.5);
+    glVertex3f(-0.1,0,2.525);
+    glVertex3f(0,0,2.4);
+    glVertex3f(0,0,1.6);
+    glVertex3f(-0.25,0,0.7);
+    glVertex3f(0,0,0);
+    glVertex3f(0.8,0,0);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(2,0.8,1.2);
+    glVertex3f(0.6,0.8,2.5);
+    glVertex3f(0.1,0.8,2.525);
+    glVertex3f(0,0.8,2.4);
+    glVertex3f(0,0.8,1.6);
+    glVertex3f(-0.25,0.8,0.7);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.8,0.8,0);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.8,0,0);
+    glVertex3f(0.8,0.8,0);
+    //rightback
+    glNormal3f(0.95,0,-1);
+    glVertex3f(2,0,1.2);
+    glVertex3f(2,0.8,1.2);
+    //rightfront
+    glNormal3f(0.95,0,1);
+    glVertex3f(0.6,0,2.5);
+    glVertex3f(0.6,0.8,2.5);
+    //bottom
+    glNormal3f(0.05,0,1);
+    glVertex3f(0.1,0,2.525);
+    glVertex3f(0.1,0.8,2.525);
+
+    glNormal3f(-1,0,1);
+    glVertex3f(0,0,2.4);
+    glVertex3f(0,0.8,2.4);
+    //left
+    glNormal3f(-1,0,-0.3);
+    glVertex3f(0,0,1.6);
+    glVertex3f(0,0.8,1.6);
+
+    glNormal3f(-1,0,0.3);
+    glVertex3f(-0.25,0,0.7);
+    glVertex3f(-0.25,0.8,0.7);
+
+    glNormal3f(-1,0,-0.9);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue5(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.7,0,-0.4);
+    glVertex3f(1.1,0,-0.45);
+    glVertex3f(1.1,0,-0.15);
+    glVertex3f(0.4,0,0.5);
+    glVertex3f(0.45,0,1.2);
+    glVertex3f(0.05,0,1.9);
+    glEnd();
+    //bottomfront
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0.05,0,1.9);
+    glVertex3f(0.45,0,1.2);
+    glVertex3f(1,0,1.8);
+    glVertex3f(1.6,0,1.9);
+    glVertex3f(2,0,2.3);
+    glVertex3f(1.85,0,2.6);
+    glVertex3f(1.6,0,2.7);
+    glEnd();
+
+    //topback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.7,0.8,-0.4);
+    glVertex3f(1.1,0.8,-0.45);
+    glVertex3f(1.1,0.8,-0.15);
+    glVertex3f(0.4,0.8,0.5);
+    glVertex3f(0.45,0.8,1.2);
+    glVertex3f(0.05,0.8,1.9);
+    glEnd();
+    //topfront
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0.05,0.8,1.9);
+    glVertex3f(0.45,0.8,1.2);
+    glVertex3f(1,0.8,1.8);
+    glVertex3f(1.6,0.8,1.9);
+    glVertex3f(2,0.8,2.3);
+    glVertex3f(1.85,0.8,2.6);
+    glVertex3f(1.6,0.8,2.7);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //back
+    glNormal3f(-0.5,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.7,0,-0.4);
+    glVertex3f(0.7,0.8,-0.4);
+
+    glNormal3f(-0.1,0,-1);
+    glVertex3f(1.1,0,-0.45);
+    glVertex3f(1.1,0.8,-0.45);
+    //rightback
+    glNormal3f(1,0,0);
+    glVertex3f(1.1,0,-0.15);
+    glVertex3f(1.1,0.8,-0.15);
+    //rightin
+    glNormal3f(1,0,1);
+    glVertex3f(0.4,0,0.5);
+    glVertex3f(0.4,0.8,0.5);
+
+    glNormal3f(1,0,-0.1);
+    glVertex3f(0.45,0,1.2);
+    glVertex3f(0.45,0.8,1.2);
+
+    glNormal3f(1,0,-1);
+    glVertex3f(1,0,1.8);
+    glVertex3f(1,0.8,1.8);
+
+    glNormal3f(0.1,0,-1);
+    glVertex3f(1.6,0,1.9);
+    glVertex3f(1.6,0.8,1.9);
+    //rightfront
+    glNormal3f(1,0,-1);
+    glVertex3f(2,0,2.3);
+    glVertex3f(2,0.8,2.3);
+
+    glNormal3f(1,0,0.7);
+    glVertex3f(1.85,0,2.6);
+    glVertex3f(1.85,0.8,2.6);
+
+    glNormal3f(0.3,0,1);
+    glVertex3f(1.6,0,2.7);
+    glVertex3f(1.6,0.8,2.7);
+    //bottom
+    glNormal3f(-0.4,0,1);
+    glVertex3f(0.05,0,1.9);
+    glVertex3f(0.05,0.8,1.9);
+    //left
+    glNormal3f(-1,0,0.01);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue6(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,2.3);
+    glVertex3f(-0.1,0,1.9);
+    glVertex3f(0,0,0);
+    glVertex3f(0.1,0,-0.1);
+    glVertex3f(0.35,0,0.2);
+    glVertex3f(0.4,0,1);
+    glVertex3f(0.7,0,1.8);
+    glVertex3f(1.4,0,2.1);
+    glVertex3f(1.5,0,2.4);
+    glVertex3f(1,0,2.6);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,2.3);
+    glVertex3f(-0.1,0.8,1.9);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.1,0.8,-0.1);
+    glVertex3f(0.35,0.8,0.2);
+    glVertex3f(0.4,0.8,1);
+    glVertex3f(0.7,0.8,1.8);
+    glVertex3f(1.4,0.8,2.1);
+    glVertex3f(1.5,0.8,2.4);
+    glVertex3f(1,0.8,2.6);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //top
+    glNormal3f(-1,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.1,0,-0.1);
+    glVertex3f(0.1,0.8,-0.1);
+
+    glNormal3f(1,0,-1);
+    glVertex3f(0.35,0,0.2);
+    glVertex3f(0.35,0.8,0.2);
+    //rightin
+    glNormal3f(1,0,-0.01);
+    glVertex3f(0.4,0,1);
+    glVertex3f(0.4,0.8,1);
+
+    glNormal3f(1,0,-0.3);
+    glVertex3f(0.7,0,1.8);
+    glVertex3f(0.7,0.8,1.8);
+
+    glNormal3f(0.2,0,-1);
+    glVertex3f(1.4,0,2.1);
+    glVertex3f(1.4,0.8,2.1);
+    //right
+    glNormal3f(1,0,-0.2);
+    glVertex3f(1.5,0,2.4);
+    glVertex3f(1.5,0.8,2.4);
+
+    glNormal3f(0.8,0,1);
+    glVertex3f(1,0,2.6);
+    glVertex3f(1,0.8,2.6);
+    //bottom
+    glNormal3f(-0.2,0,1);
+    glVertex3f(0,0,2.3);
+    glVertex3f(0,0.8,2.3);
+    //left
+    glNormal3f(-1,0,0.1);
+    glVertex3f(-0.1,0,1.9);
+    glVertex3f(-0.1,0.8,1.9);
+
+    glNormal3f(-1,0,-0.01);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue7(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0.95,0,1.45);
+    glVertex3f(0.95,0,2.1);
+    glVertex3f(0.4,0,2.5);
+    glVertex3f(0.35,0,2.2);
+    glVertex3f(0.1,0,2);
+    glVertex3f(-0.2,0,1.9);
+    glVertex3f(-0.15,0,1.1);
+    glVertex3f(-0.3,0,0.6);
+    glVertex3f(0,0,0);
+    glVertex3f(0.9,0,0.7);
+    glVertex3f(1.4,0,0.95);
+    glVertex3f(1.4,0,1.15);
+    glEnd();
+    //bottomfront
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0.6,0,3.35);
+    glVertex3f(-1.4,0,3.2);
+    glVertex3f(-1.45,0,3.05);
+    glVertex3f(-1.4,0,2.9);
+    glVertex3f(-0.8,0,2.9);
+    glVertex3f(-0.3,0,3);
+    glVertex3f(0.2,0,2.9);
+    glVertex3f(0.4,0,2.5);
+    glVertex3f(0.95,0,2.1);
+    glVertex3f(1.3,0,2.7);
+    glVertex3f(1.1,0,3.2);
+    glEnd();
+    //topback
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0.95,0.8,1.45);
+    glVertex3f(0.95,0.8,2.1);
+    glVertex3f(0.4,0.8,2.5);
+    glVertex3f(0.35,0.8,2.2);
+    glVertex3f(0.1,0.8,2);
+    glVertex3f(-0.2,0.8,1.9);
+    glVertex3f(-0.15,0.8,1.1);
+    glVertex3f(-0.3,0.8,0.6);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.9,0.8,0.7);
+    glVertex3f(1.4,0.8,0.95);
+    glVertex3f(1.4,0.8,1.15);
+    glEnd();
+    //topfront
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0.6,0.8,3.35);
+    glVertex3f(-1.4,0.8,3.2);
+    glVertex3f(-1.45,0.8,3.05);
+    glVertex3f(-1.4,0.8,2.9);
+    glVertex3f(-0.8,0.8,2.9);
+    glVertex3f(-0.3,0.8,3);
+    glVertex3f(0.2,0.8,2.9);
+    glVertex3f(0.4,0.8,2.5);
+    glVertex3f(0.95,0.8,2.1);
+    glVertex3f(1.3,0.8,2.7);
+    glVertex3f(1.1,0.8,3.2);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //top
+    glNormal3f(0.8,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.9,0,0.7);
+    glVertex3f(0.9,0.8,0.7);
+
+    glNormal3f(0.2,0,-1);
+    glVertex3f(1.4,0,0.95);
+    glVertex3f(1.4,0.8,0.95);
+    //righttop
+    glNormal3f(1,0,0);
+    glVertex3f(1.4,0,1.15);
+    glVertex3f(1.4,0.8,1.15);
+    //rightin
+    glNormal3f(0.2,0,1);
+    glVertex3f(0.95,0,1.45);
+    glVertex3f(0.95,0.8,1.45);
+
+    glNormal3f(1,0,0);
+    glVertex3f(0.95,0,2.1);
+    glVertex3f(0.95,0.8,2.1);
+
+    glNormal3f(1,0,-1);
+    glVertex3f(1.3,0,2.7);
+    glVertex3f(1.3,0.8,2.7);
+    //bottom
+    glNormal3f(1,0,0.9);
+    glVertex3f(1.1,0,3.2);
+    glVertex3f(1.1,0.8,3.2);
+
+    glNormal3f(0.1,0,1);
+    glVertex3f(0.6,0,3.35);
+    glVertex3f(0.6,0.8,3.35);
+
+    glNormal3f(-0.01,0,1);
+    glVertex3f(-1.4,0,3.2);
+    glVertex3f(-1.4,0.8,3.2);
+    //lefttip
+    glNormal3f(-1,0,0.1);
+    glVertex3f(-1.45,0,3.05);
+    glVertex3f(-1.45,0.8,3.05);
+
+    glNormal3f(-1,0,-0.1);
+    glVertex3f(-1.4,0,2.9);
+    glVertex3f(-1.4,0.8,2.9);
+    //leftin
+    glNormal3f(0,0,-1);
+    glVertex3f(-0.8,0,2.9);
+    glVertex3f(-0.8,0.8,2.9);
+
+    glNormal3f(0.1,0,-1);
+    glVertex3f(-0.3,0,3);
+    glVertex3f(-0.3,0.8,3);
+
+    glNormal3f(-0.1,0,-1);
+    glVertex3f(0.2,0,2.9);
+    glVertex3f(0.2,0.8,2.9);
+
+    glNormal3f(-1,0,-0.2);
+    glVertex3f(0.4,0,2.5);
+    glVertex3f(0.4,0.8,2.5);
+
+    glNormal3f(-1,0,0.02);
+    glVertex3f(0.35,0,2.2);
+    glVertex3f(0.35,0.8,2.2);
+
+    glNormal3f(-0.8,0,1);
+    glVertex3f(0.1,0,2);
+    glVertex3f(0.1,0.8,2);
+
+    glNormal3f(-0.1,0,1);
+    glVertex3f(-0.2,0,1.9);
+    glVertex3f(-0.2,0.8,1.9);
+    //left
+    glNormal3f(-1,0,-0.01);
+    glVertex3f(-0.15,0,1.1);
+    glVertex3f(-0.15,0.8,1.1);
+
+    glNormal3f(-1,0,0.2);
+    glVertex3f(-0.3,0,0.6);
+    glVertex3f(-0.3,0.8,0.6);
+
+    glNormal3f(-1,0,-0.7);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void blue8(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomtop
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.5,0,0);
+    glVertex3f(1.1,0,0.3);
+    glVertex3f(2,0,1.6);
+    glVertex3f(1.7,0,2.3);
+    glVertex3f(1.1,0,2);
+    glVertex3f(0.4,0,2.1);
+    glVertex3f(-0.15,0,2.6);
+    glVertex3f(-0.65,0,3);
+    glVertex3f(-0.6,0,0.8);
+    glEnd();
+    //bottombottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(2.7,0,3.3);
+    glVertex3f(2.75,0,3.8);
+    glVertex3f(2.4,0,4.2);
+    glVertex3f(2.4,0,3.7);
+    glVertex3f(1.7,0,2.3);
+    glVertex3f(2,0,1.6);
+    glEnd();
+    //toptop
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.5,0.8,0);
+    glVertex3f(1.1,0.8,0.3);
+    glVertex3f(2,0.8,1.6);
+    glVertex3f(1.7,0.8,2.3);
+    glVertex3f(1.1,0.8,2);
+    glVertex3f(0.4,0.8,2.1);
+    glVertex3f(-0.15,0.8,2.6);
+    glVertex3f(-0.65,0.8,3);
+    glVertex3f(-0.6,0.8,0.8);
+    glEnd();
+    //topbottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(2.7,0.8,3.3);
+    glVertex3f(2.75,0.8,3.8);
+    glVertex3f(2.4,0.8,4.2);
+    glVertex3f(2.4,0.8,3.7);
+    glVertex3f(1.7,0.8,2.3);
+    glVertex3f(2,0.8,1.6);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //top
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.5,0,0);
+    glVertex3f(0.5,0.8,0);
+
+    glNormal3f(0.8,0,-1);
+    glVertex3f(1.1,0,0.3);
+    glVertex3f(1.1,0.8,0.3);
+    //right
+    glNormal3f(1,0,-0.6);
+    glVertex3f(2,0,1.6);
+    glVertex3f(2,0.8,1.6);
+
+    glNormal3f(1,0,-0.3);
+    glVertex3f(2.7,0,3.3);
+    glVertex3f(2.7,0.8,3.3);
+
+    glNormal3f(1,0,-0.05);
+    glVertex3f(2.75,0,3.8);
+    glVertex3f(2.75,0.8,3.8);
+
+    glNormal3f(1,0,1);
+    glVertex3f(2.4,0,4.2);
+    glVertex3f(2.4,0.8,4.2);
+    //in
+    glNormal3f(-1,0,0);
+    glVertex3f(2.4,0,3.7);
+    glVertex3f(2.4,0.8,3.7);
+
+    glNormal3f(-1,0,0.6);
+    glVertex3f(1.7,0,2.3);
+    glVertex3f(1.7,0.8,2.3);
+
+    glNormal3f(-0.1,0,1);
+    glVertex3f(1.1,0,2);
+    glVertex3f(1.1,0.8,2);
+
+    glNormal3f(0.1,0,1);
+    glVertex3f(0.4,0,2.1);
+    glVertex3f(0.4,0.8,2.1);
+
+    glNormal3f(0.9,0,1);
+    glVertex3f(-0.15,0,2.6);
+    glVertex3f(-0.15,0.8,2.6);
+
+    glNormal3f(0.2,0,1);
+    glVertex3f(-0.65,0,3);
+    glVertex3f(-0.65,0.8,3);
+    //left
+    glNormal3f(-1,0,-0.01);
+    glVertex3f(-0.6,0,0.8);
+    glVertex3f(-0.6,0.8,0.8);
+
+    glNormal3f(-1,0,-0.9);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void river1(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+    
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0.9,0,0.2);
+    glVertex3f(2.1,0,0.9);
+    glVertex3f(2.8,0,1.8);
+    glVertex3f(2.3,0,2.3);
+    glVertex3f(1,0,1.2);
+    glVertex3f(0,0,0.8);
+    glVertex3f(-0.85,0,0.7);
+    glVertex3f(-0.9,0,0.5);
+    glVertex3f(-0.5,0,0.1);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(0.9,0.8,0.2);
+    glVertex3f(2.1,0.8,0.9);
+    glVertex3f(2.8,0.8,1.8);
+    glVertex3f(2.3,0.8,2.3);
+    glVertex3f(1,0.8,1.2);
+    glVertex3f(0,0.8,0.8);
+    glVertex3f(-0.85,0.8,0.7);
+    glVertex3f(-0.9,0.8,0.5);
+    glVertex3f(-0.5,0.8,0.1);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //top
+    glNormal3f(-1,0,-1);
+    glVertex3f(-0.9,0,0.5);
+    glVertex3f(-0.9,0.8,0.5);
+    glVertex3f(-0.5,0,0.1);
+    glVertex3f(-0.5,0.8,0.1);
+
+    glNormal3f(-0.1,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+
+    glNormal3f(0.2,0,-1);
+    glVertex3f(0.9,0,0.2);
+    glVertex3f(0.9,0.8,0.2);
+
+    glNormal3f(0.5,0,-1);
+    glVertex3f(2.1,0,0.9);
+    glVertex3f(2.1,0.8,0.9);
+    //right
+    glNormal3f(1,0,-0.8);
+    glVertex3f(2.8,0,1.8);
+    glVertex3f(2.8,0.8,1.8);
+
+    glNormal3f(1,0,1);
+    glVertex3f(2.3,0,2.3);
+    glVertex3f(2.3,0.8,2.3);
+    //bottom
+    glNormal3f(-0.8,0,1);
+    glVertex3f(1,0,1.2);
+    glVertex3f(1,0.8,1.2);
+
+    glNormal3f(-0.3,0,1);
+    glVertex3f(0,0,0.8);
+    glVertex3f(0,0.8,0.8);
+
+    glNormal3f(-0.1,0,1);
+    glVertex3f(-0.85,0,0.7);
+    glVertex3f(-0.85,0.8,0.7);
+    //left
+    glNormal3f(-1,0,0.2);
+    glVertex3f(-0.9,0,0.5);
+    glVertex3f(-0.9,0.8,0.5);
+    glEnd();
+    glPopMatrix();
+}
+
+void river2(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+    
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(-0.5,0,-0.5);
+    glVertex3f(0.8,0,0);
+    glVertex3f(2.55,0,1.25);
+    glVertex3f(2.2,0,1.6);
+    glVertex3f(-0.1,0,0.1);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(-0.5,0.8,-0.5);
+    glVertex3f(0.8,0.8,0);
+    glVertex3f(2.55,0.8,1.25);
+    glVertex3f(2.2,0.8,1.6);
+    glVertex3f(-0.1,0.8,0.1);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //top
+    glNormal3f(0,0,-1);
+    glVertex3f(-0.5,0,-0.5);
+    glVertex3f(-0.5,0.8,-0.5);
+    glVertex3f(0.8,0,0);
+    glVertex3f(0.8,0.8,0);
+    //right
+    glNormal3f(0.9,0,-1);
+    glVertex3f(2.55,0,1.25);
+    glVertex3f(2.55,0.8,1.25);
+
+    glNormal3f(0.9,0,1);
+    glVertex3f(2.2,0,1.6);
+    glVertex3f(2.2,0.8,1.6);
+    //bottom
+    glNormal3f(-0.9,0,1);
+    glVertex3f(-0.1,0,0.1);
+    glVertex3f(-0.1,0.8,0.1);
+    //left
+    glNormal3f(-1,0,-0.2);
+    glVertex3f(-0.5,0,-0.5);
+    glVertex3f(-0.5,0.8,-0.5);
+    glEnd();
+    glPopMatrix();
+}
+
+void pit(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottomtop
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(2.2,0,0.8);
+    glVertex3f(2.2,0,1);
+    glVertex3f(1.5,0,1);
+    glVertex3f(1,0,1.2);
+    glVertex3f(0.8,0,1.8);
+    glVertex3f(0.35,0,1.1);
+    glVertex3f(-0.1,0,0.6);
+    glVertex3f(-0.5,0,0.5);
+    glVertex3f(-0.6,0,0.25);
+    glVertex3f(-0.3,0,0);
+    glEnd();
+    //bottommiddle
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(1.2,0,3.1);
+    glVertex3f(0.7,0,2.6);
+    glVertex3f(0.3,0,1.9);
+    glVertex3f(0.35,0,1.1);
+    glVertex3f(0.8,0,1.8);
+    glVertex3f(1.2,0,2.4);
+    glVertex3f(1.6,0,2.8);
+    glVertex3f(2,0,2.9);
+    glVertex3f(2.8,0,2.8);
+    glVertex3f(3.6,0,3.15);
+    glVertex3f(3.2,0,3.8);
+    glVertex3f(3,0,3.85);
+    glVertex3f(2.1,0,3.6);
+    glVertex3f(1.2,0,3.1);
+    glEnd();
+    //bottombottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(4.4,0,3.1);
+    glVertex3f(4.25,0,3.2);
+    glVertex3f(3.6,0,3.15);
+    glVertex3f(2.8,0,2.8);
+    glVertex3f(3.1,0,2.3);
+    glVertex3f(3.2,0,1.7);
+    glVertex3f(3.1,0,1.5);
+    glVertex3f(3.3,0,1.3);
+    glVertex3f(4.3,0,2.2);
+    glEnd();
+
+    //toptop
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(2.2,0.8,0.8);
+    glVertex3f(2.2,0.8,1);
+    glVertex3f(1.5,0.8,1);
+    glVertex3f(1,0.8,1.2);
+    glVertex3f(0.8,0.8,1.8);
+    glVertex3f(0.35,0.8,1.1);
+    glVertex3f(-0.1,0.8,0.6);
+    glVertex3f(-0.5,0.8,0.5);
+    glVertex3f(-0.6,0.8,0.25);
+    glVertex3f(-0.3,0.8,0);
+    glEnd();
+    //topmiddle
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(1.2,0.8,3.1);
+    glVertex3f(0.7,0.8,2.6);
+    glVertex3f(0.3,0.8,1.9);
+    glVertex3f(0.35,0.8,1.1);
+    glVertex3f(0.8,0.8,1.8);
+    glVertex3f(1.2,0.8,2.4);
+    glVertex3f(1.6,0.8,2.8);
+    glVertex3f(2,0.8,2.9);
+    glVertex3f(2.8,0.8,2.8);
+    glVertex3f(3.6,0.8,3.15);
+    glVertex3f(3.2,0.8,3.8);
+    glVertex3f(3,0.8,3.85);
+    glVertex3f(2.1,0.8,3.6);
+    glVertex3f(1.2,0.8,3.1);
+    glEnd();
+    //topbottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(4.4,0.8,3.1);
+    glVertex3f(4.25,0.8,3.2);
+    glVertex3f(3.6,0.8,3.15);
+    glVertex3f(2.8,0.8,2.8);
+    glVertex3f(3.1,0.8,2.3);
+    glVertex3f(3.2,0.8,1.7);
+    glVertex3f(3.1,0.8,1.5);
+    glVertex3f(3.3,0.8,1.3);
+    glVertex3f(4.3,0.8,2.2);
+    glEnd();
+
+    glBegin(GL_QUAD_STRIP);
+    //top
+    glNormal3f(0.4,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glVertex3f(2.2,0,0.8);
+    glVertex3f(2.2,0.8,0.8);
+
+    glNormal3f(1,0,0);
+    glVertex3f(2.2,0,1);
+    glVertex3f(2.2,0.8,1);
+    //inleft
+    glNormal3f(0,0,1);
+    glVertex3f(1.5,0,1);
+    glVertex3f(1.5,0.8,1);
+
+    glNormal3f(0.4,0,1);
+    glVertex3f(1,0,1.2);
+    glVertex3f(1,0.8,1.2);
+
+    glNormal3f(1,0,0.3);
+    glVertex3f(0.8,0,1.8);
+    glVertex3f(0.8,0.8,1.8);
+
+    glNormal3f(1,0,-0.8);
+    glVertex3f(1.2,0,2.4);
+    glVertex3f(1.2,0.8,2.4);
+
+    glNormal3f(1,0,-0.9);
+    glVertex3f(1.6,0,2.8);
+    glVertex3f(1.6,0.8,2.8);
+
+    glNormal3f(0.2,0,-1);
+    glVertex3f(2,0,2.9);
+    glVertex3f(2,0.8,2.9);
+    //inright
+    glNormal3f(-0.1,0,-1);
+    glVertex3f(2.8,0,2.8);
+    glVertex3f(2.8,0.8,2.8);
+
+    glNormal3f(-1,0,-0.5);
+    glVertex3f(3.1,0,2.3);
+    glVertex3f(3.1,0.8,2.3);
+
+    glNormal3f(-1,0,-0.2);
+    glVertex3f(3.2,0,1.7);
+    glVertex3f(3.2,0.8,1.7);
+
+    glNormal3f(-1,0,0.8);
+    glVertex3f(3.1,0,1.5);
+    glVertex3f(3.1,0.8,1.5);
+
+    glNormal3f(-1,0,-1);
+    glVertex3f(3.3,0,1.3);
+    glVertex3f(3.3,0.8,1.3);
+
+    glNormal3f(0.9,0,-1);
+    glVertex3f(4.3,0,2.2);
+    glVertex3f(4.3,0.8,2.2);
+    //right
+    glNormal3f(1,0,-0.1);
+    glVertex3f(4.4,0,3.1);
+    glVertex3f(4.4,0.8,3.1);
+
+    glNormal3f(0.9,0,1);
+    glVertex3f(4.25,0,3.2);
+    glVertex3f(4.25,0.8,3.2);
+    //bottomright
+    glNormal3f(-0.1,0,1);
+    glVertex3f(3.6,0,3.15);
+    glVertex3f(3.6,0.8,3.15);
+
+    glNormal3f(1,0,0.5);
+    glVertex3f(3.2,0,3.8);
+    glVertex3f(3.2,0.8,3.8);
+
+    glNormal3f(0.3,0,1);
+    glVertex3f(3,0,3.85);
+    glVertex3f(3,0.8,3.85);
+    //bottommiddle
+    glNormal3f(-0.3,0,1);
+    glVertex3f(2.1,0,3.6);
+    glVertex3f(2.1,0.8,3.6);
+
+    glNormal3f(-0.6,0,1);
+    glVertex3f(1.2,0,3.1);
+    glVertex3f(1.2,0.8,3.1);
+    //bottomleft
+    glNormal3f(-1,0,1);
+    glVertex3f(0.7,0,2.6);
+    glVertex3f(0.7,0.8,2.6);
+
+    glNormal3f(-1,0,0.8);
+    glVertex3f(0.3,0,1.9);
+    glVertex3f(0.3,0.8,1.9);
+    //left
+    glNormal3f(-1,0,-0.1);
+    glVertex3f(0.35,0,1.1);
+    glVertex3f(0.35,0.8,1.1);
+
+    glNormal3f(-0.9,0,1);
+    glVertex3f(-0.1,0,0.6);
+    glVertex3f(-0.1,0.8,0.6);
+
+    glNormal3f(-0.2,0,1);
+    glVertex3f(-0.5,0,0.5);
+    glVertex3f(-0.5,0.8,0.5);
+
+    glNormal3f(-1,0,0.4);
+    glVertex3f(-0.6,0,0.25);
+    glVertex3f(-0.6,0.8,0.25);
+
+    glNormal3f(-0.9,0,-1);
+    glVertex3f(-0.3,0,0);
+    glVertex3f(-0.3,0.8,0);
+
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.8,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void tower(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+    
+    glBegin(GL_POLYGON);
+    
+    glEnd();
+    glPopMatrix();
+}
+
+void riftHalf(double x, double y, double z, double th){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+
+    baseWalls(9.5,0,-2.5,90,0);
+    baseWalls(9.25,0,-5,135,0);
+    red1(9.25,0,-7.2,45);
+    red2(11.75,0,-5.5,0);
+    red3(11.75,0,-9.75,45);
+    red4(12.75,0,-6,35);
+    red5(12.75,0,-3.5,0);
+    red6(14.75,0,-7.75,0);
+    red7(16,0,-4.75,0);
+    red8(16.75,0,-2.75,0);
+    red9(19.5,0,-3,0);
+    red10(22.5,0,-4.75,0);
+
+    baseWalls(2.5,0.8,-9.5,0,180);
+    baseWalls(5,0.8,-9.25,315,180);
+    blue1(2.56,0,-14.2,0);
+    blue2(5.2,0,-13.5,0);
+    blue3(6.8,0,-13.3,0);
+    blue4(9.25,0,-14.25,0);
+    blue5(2.56,0,-17.25,0);
+    blue6(4.5,0,-18.35,0);
+    blue7(7.25,0,-17.5,0);
+    blue8(3.35,0,-21.75,0);
+
+    river1(10,0,-16.25,0);
+    river2(13,0,-19,0);
+
+    pit(18.5,0,-9.5,0);
+
+    glPopMatrix();
+}
 
 void KrugFoot(double x, double y, double z,double dx, double dy, double dz){
     float white[] = {1,1,1,1};
@@ -330,28 +2607,6 @@ void Krug(double x, double y, double z, double dx, double dy, double dz, double 
     glPopMatrix();
 }
 
-void Square(double x, double y, double z){
-    float white[] = {1,1,1,1};
-    float black[] = {0,0,0,1};
-    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-    glPushMatrix();
-    glTranslated(x,y,z);
-    glEnable(GL_TEXTURE_2D);
-    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-    glBindTexture(GL_TEXTURE_2D,grass);
-    glBegin(GL_QUADS);
-    glNormal3f(0,1,0);
-    glTexCoord2f(0,0); glVertex3f(0,0,0);
-    glTexCoord2f(1,0); glVertex3f(2,0,0);
-    glTexCoord2f(1,1); glVertex3f(2,0,2);
-    glTexCoord2f(0,1); glVertex3f(0,0,2);
-    glEnd();
-    glPopMatrix();
-    glDisable(GL_TEXTURE_2D);
-}
-
 void Ground(){
     float white[] = {1,1,1,1};
     float black[] = {0,0,0,1};
@@ -377,110 +2632,6 @@ void Ground(){
         for(int j=0; j<=20;j+=2)
             Square(i-20,-0.93,j-10);
     }
-    glPopMatrix();
-}
-
-void Walls(){
-    float white[] = {1,1,1,1};
-    float black[] = {0,0,0,1};
-    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-    double h1 = -0.919, h2 = 1;
-    double wallArr[] ={
-        3.3,-0.919,1,
-        5,-0.919,0.75,
-        7,-0.919,0,
-        14,-0.919,0.75,
-        14.5,-0.919,0,
-        14,-0.919,-0.75,
-        7,-0.919,-2,
-        5,-0.919,-4.5,
-        3,-0.919,-4,
-        -4.5,-0.919,-3.75,
-        -5.25,-0.919,-3,
-        -5.5,-0.919,-1,
-        -5.25,-0.919,1.25,
-        -4.5,-0.919,1.5
-    };
-    glPushMatrix();
-    glTranslated(1.6,0,1.3);
-    glColor3f(0.30, 0.27, 0.21);
-    glEnable(GL_TEXTURE_2D);
-    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-    glBindTexture(GL_TEXTURE_2D,cobblestone);
-    glBegin(GL_QUAD_STRIP);
-    int i = 0;
-    glTexCoord2f(0,0);
-    for(int th=155; th<=365;th+=15){
-        glNormal3f(-3.1*Cos(th),0,-3.1*Sin(th));
-        glTexCoord2f(1.5*Cos(th)+.5,0); glVertex3f(3.1*Cos(th),h1,3.1*Sin(th));
-        glTexCoord2f(1.5*Cos(th)+.5,1); glVertex3f(3.1*Cos(th),h2,3.1*Sin(th));
-        i++;
-    }
-    glTexCoord2f(0,1);
-    for(int i=0; i<42;i+=3){
-        if(i<39) glNormal3f(-(wallArr[i+5]-wallArr[i+2]),0,(wallArr[i+3]-wallArr[i])); 
-        glTexCoord2f(.5*wallArr[i],0); glVertex3f(wallArr[i],h1,wallArr[i+2]);
-        glTexCoord2f(.5*wallArr[i],1); glVertex3f(wallArr[i],h2,wallArr[i+2]);
-    }
-    glTexCoord2f(0,0); glVertex3f(3.1*Cos(155),h1,3.1*Sin(155));
-    glTexCoord2f(0,1); glVertex3f(3.1*Cos(155),h2,3.1*Sin(155));
-    glEnd();
-
-    glColor3f(0.25,0.22,0.16); //top
-    glNormal3f(0,1,0);
-    glBegin(GL_POLYGON);
-    glTexCoord2f(.5*7,0); glVertex3f(7,h2,0);
-    glTexCoord2f(.5*14,.5*.75); glVertex3f(14,h2,0.75);
-    glTexCoord2f(.5*14.5,0); glVertex3f(14.5,h2,0);
-    glTexCoord2f(.5*14,.5*-.75); glVertex3f(14,h2,-0.75);
-    glTexCoord2f(.5*7,.5*-2); glVertex3f(7,h2,-2);
-    glEnd();
-    glBegin(GL_QUAD_STRIP);
-    glTexCoord2f(.5*7,0); glVertex3f(7,h2,0);
-    glTexCoord2f(.5*7,.5*-2); glVertex3f(7,h2,-2);
-    glTexCoord2f(.5*5,.5*.75); glVertex3f(5,h2,0.75);
-    glTexCoord2f(.5*5,.5*-4.5); glVertex3f(5,h2,-4.5);
-    glTexCoord2f(.5*3.3,.5*1); glVertex3f(3.3,h2,1);
-    glTexCoord2f(.5*3,.5*-4); glVertex3f(3,h2,-4);
-    glTexCoord2f(.5*3.1*Cos(365),.5*3.1*Sin(365)); glVertex3f(3.1*Cos(365),h2,3.1*Sin(365));
-    glTexCoord2f(.5*3.1*Cos(365),.5*3.1*Sin(365)); glVertex3f(3.1*Cos(365),h2,3.1*Sin(365));
-    glEnd();
-    glBegin(GL_QUAD_STRIP);
-    glTexCoord2f(.5*-4.5,.5*1.5); glVertex3f(-4.5,h2,1.5);
-    glTexCoord2f(.5*-5.25,.5*1.25); glVertex3f(-5.25,h2,1.25);
-    glTexCoord2f(.5*3.1*Cos(155),.5*3.1*Sin(155)); glVertex3f(3.1*Cos(155),h2,3.1*Sin(155));
-    glTexCoord2f(.5*-5.5,.5*-1); glVertex3f(-5.5,h2,-1);
-    glTexCoord2f(.5*3.1*Cos(170),.5*3.1*Sin(170)); glVertex3f(3.1*Cos(170),h2,3.1*Sin(170));
-    glTexCoord2f(.5*-5.5,.5*-1); glVertex3f(-5.5,h2,-1);
-    glTexCoord2f(.5*3.1*Cos(185),.5*3.1*Sin(185)); glVertex3f(3.1*Cos(185),h2,3.1*Sin(185));
-    glTexCoord2f(.5*-5.5,.5*-1); glVertex3f(-5.5,h2,-1);
-    glTexCoord2f(.5*3.1*Cos(200),.5*3.1*Sin(200)); glVertex3f(3.1*Cos(200),h2,3.1*Sin(200));
-    glTexCoord2f(.5*-5.25,.5*-3); glVertex3f(-5.25,h2,-3);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(.5*3,.5*-4); glVertex3f(3,h2,-4);
-    glTexCoord2f(.5*3.1*Cos(365),.5*3.1*Sin(365)); glVertex3f(3.1*Cos(365),h2,3.1*Sin(365));
-    glTexCoord2f(.5*3.1*Cos(350),.5*3.1*Sin(350)); glVertex3f(3.1*Cos(350),h2,3.1*Sin(350));
-    glTexCoord2f(.5*3.1*Cos(335),.5*3.1*Sin(335)); glVertex3f(3.1*Cos(335),h2,3.1*Sin(335));
-    glTexCoord2f(.5*3.1*Cos(320),.5*3.1*Sin(320)); glVertex3f(3.1*Cos(320),h2,3.1*Sin(320));
-    glTexCoord2f(.5*3.1*Cos(305),.5*3.1*Sin(305)); glVertex3f(3.1*Cos(305),h2,3.1*Sin(305));
-    glTexCoord2f(.5*3.1*Cos(290),.5*3.1*Sin(290)); glVertex3f(3.1*Cos(290),h2,3.1*Sin(290));
-    glTexCoord2f(.5*3.1*Cos(275),.5*3.1*Sin(275)); glVertex3f(3.1*Cos(275),h2,3.1*Sin(275));
-    glTexCoord2f(.5*3.1*Cos(260),.5*3.1*Sin(260)); glVertex3f(3.1*Cos(260),h2,3.1*Sin(260));
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(.5*-4.5,.5*-3); glVertex3f(-4.5,h2,-3.75);
-    glTexCoord2f(.5*-5.25,.5*-3); glVertex3f(-5.25,h2,-3);
-    glTexCoord2f(.5*3.1*Cos(200),.5*3.1*Sin(200)); glVertex3f(3.1*Cos(200),h2,3.1*Sin(200));
-    glTexCoord2f(.5*3.1*Cos(215),.5*3.1*Sin(215)); glVertex3f(3.1*Cos(215),h2,3.1*Sin(215));
-    glTexCoord2f(.5*3.1*Cos(230),.5*3.1*Sin(230)); glVertex3f(3.1*Cos(230),h2,3.1*Sin(230));
-    glTexCoord2f(.5*3.1*Cos(245),.5*3.1*Sin(245)); glVertex3f(3.1*Cos(245),h2,3.1*Sin(245));
-    glTexCoord2f(.5*3.1*Cos(260),.5*3.1*Sin(260)); glVertex3f(3.1*Cos(260),h2,3.1*Sin(260));
-    glTexCoord2f(.5*3,.5*-4); glVertex3f(3,h2,-4);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
 
@@ -522,7 +2673,7 @@ void display()
     double Ex = -2*dim*Sin(th)*Cos(ph);
     double Ey = +2*dim        *Sin(ph);
     double Ez = +2*dim*Cos(th)*Cos(ph);
-    gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+    gluLookAt(Ex+eyeX,Ey,Ez-eyeZ , 0+eyeX,0,0-eyeZ , 0,Cos(ph),0);
     glShadeModel(GL_SMOOTH);
     if(lightOn){
         float Ambient[] = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
@@ -531,7 +2682,18 @@ void display()
 
         float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
         glColor3f(1,1,1);
-        ball(Position[0],Position[1],Position[2] , 0.1);
+        if(mode != 22) {
+            distance = 5;
+            Position[0] = distance*Cos(zh);
+            Position[2] = distance*Sin(zh);
+            ball(Position[0],Position[1],Position[2] , 0.1);
+        }
+        if(mode == 22){
+            distance = 10;
+            Position[0] = 15+distance*Cos(zh);
+            Position[2] = -15+distance*Sin(zh);
+            ball(Position[0],Position[1],Position[2] , 0.1);
+        }
         glEnable(GL_NORMALIZE);
         glEnable(GL_LIGHTING);
         glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
@@ -543,15 +2705,115 @@ void display()
         glLightfv(GL_LIGHT0,GL_POSITION,Position);
     }
     else glDisable(GL_LIGHTING);
-    Ground();
-    Krug(3,0,0,1,1,1,-5); //main big krug
-    Krug(0,-0.225,0,0.75,0.75,0.75,10); //medium krug
-    Krug(-0.5,-0.55,2.5,0.4,0.4,0.4,45); //small krugs
-    Krug(1.5,-0.55,1.75,0.4,0.4,0.4,5);
-    Walls();
+    // Ground();
+    // Krug(3,0,0,1,1,1,-5); //main big krug
+    // Krug(0,-0.225,0,0.75,0.75,0.75,10); //medium krug
+    // Krug(-0.5,-0.55,2.5,0.4,0.4,0.4,45); //small krugs
+    // Krug(1.5,-0.55,1.75,0.4,0.4,0.4,5);
+    // Walls();
+
+    switch (mode)
+    {
+    case 0:
+        eyeX=0, eyeZ=0;
+        baseWalls(0,0,0,0,0);
+        break;
+    case 1:
+        eyeX=0, eyeZ=0;
+        red1(0,0,0,0);
+        break;
+    case 2:
+        eyeX=0, eyeZ=0;
+        red2(0,0,0,0);
+        break;
+    case 3:
+        eyeX=0, eyeZ=0;
+        red3(0,0,0,0);
+        break;
+    case 4:
+        eyeX=0, eyeZ=0;
+        red4(0,0,0,0);
+        break;
+    case 5:
+        eyeX=0, eyeZ=0;
+        red5(0,0,0,0);
+        break;
+    case 6:
+        eyeX=0, eyeZ=0;
+        red6(0,0,0,0);
+        break;
+    case 7:
+        eyeX=0, eyeZ=0;
+        red7(0,0,0,0);
+        break;
+    case 8:
+        eyeX=0, eyeZ=0;
+        red8(0,0,0,0);
+        break;
+    case 9:
+        eyeX=0, eyeZ=0;
+        red9(0,0,0,0);
+        break;
+    case 10:
+        eyeX=0, eyeZ=0;
+        red10(0,0,0,0);
+        break;
+    case 11:
+        eyeX=0, eyeZ=0;
+        blue1(0,0,0,0);
+        break;
+    case 12:
+        eyeX=0, eyeZ=0;
+        blue2(0,0,0,0);
+        break;
+    case 13:
+        eyeX=0, eyeZ=0;
+        blue3(0,0,0,0);
+        break;
+    case 14:
+        eyeX=0, eyeZ=0;
+        blue4(0,0,0,0);
+        break;
+    case 15:
+        eyeX=0, eyeZ=0;
+        blue5(0,0,0,0);
+        break;
+    case 16:
+        eyeX=0, eyeZ=0;
+        blue6(0,0,0,0);
+        break;
+    case 17:
+        eyeX=0, eyeZ=0;
+        blue7(0,0,0,0);
+        break;
+    case 18:
+        eyeX=0, eyeZ=0;
+        blue8(0,0,0,0);
+        break;
+    case 19:
+        eyeX=0, eyeZ=0;
+        river1(0,0,0,0);
+        break;
+    case 20:
+        eyeX=0, eyeZ=0;
+        river2(0,0,0,0);
+        break;
+    case 21:
+        eyeX=0, eyeZ=0;
+        pit(0,0,0,0);
+        break;
+    default:
+        betterGround();
+        //blueside
+        riftHalf(0,0,0,0);
+        //redside
+        riftHalf(30,0,-30,180);
+        break;
+    }
+    
     glColor3f(1,1,1);
     glWindowPos2i(5,5);
-    Print("Angle=%d,%d Dim=%.1f FOV=%d Light Height=%.1f",th,ph,dim,fov,ylight);
+    Print("Angle=%d,%d Center=%.1f,%.1f Dim=%.1f FOV=%d Light Height=%.1f Mode=%d",th,ph,eyeX,eyeZ,dim,fov,ylight,mode);
     ErrCheck("display");
     glFlush();
     glutSwapBuffers();
@@ -594,7 +2856,7 @@ void key(unsigned char ch,int x,int y)
         dim -= 0.1;
     else if(ch == 'l' || ch == 'L') //light on/off
         lightOn = 1-lightOn;
-    else if (ch == 's' || ch == 'S') //stop/start light movement
+    else if (ch == '1') //stop/start light movement
         move = 1-move;
     else if (ch == '.') //move light manually
         zh += 1;
@@ -604,7 +2866,14 @@ void key(unsigned char ch,int x,int y)
         ylight -= 0.1;
     else if (ch == '0')
         ylight += 0.1;
-    
+    else if (ch == 'm'){
+        if(mode<=21) mode++;
+        else mode = 0;
+    }
+    else if (ch == 'w') eyeZ+=0.25;
+    else if (ch == 's') eyeZ-=0.25;
+    else if (ch == 'a') eyeX-=0.25;
+    else if (ch == 'd') eyeX+=0.25;
     glutIdleFunc(move?idle:NULL);
     Project();
     glutPostRedisplay();
