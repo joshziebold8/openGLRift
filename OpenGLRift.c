@@ -23,8 +23,8 @@
 
 int th=0, ph=0, fov=55, height=15*50, width=15*50, 
 lightOn=1, ambient=30, diffuse=100, specular=0, emission=00,
-distance=10, zh=90, inc=10, move=1, mode=22;
-double asp=1, dim=10, shiny=1, ylight=3, eyeX, eyeZ;
+distance=10, zh=90, inc=10, move=1, mode=24;
+double asp=1, dim=15, shiny=1, ylight=3, eyeX, eyeZ;
 unsigned int grass, rock, cobblestone, map;
 
 #define Cos(th) cos(3.14159265/180*(th))
@@ -168,7 +168,7 @@ void Square(double x, double y, double z){
     // glEnable(GL_TEXTURE_2D);
     // glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
     // glBindTexture(GL_TEXTURE_2D,grass);
-    glColor3f(0.21, 0.39, 0.12);
+    glColor3f(0.15, 0.28, 0.57);
     glBegin(GL_QUADS);
     glNormal3f(0,1,0);
     glTexCoord2f(0,0); glVertex3f(0,0,0);
@@ -198,6 +198,68 @@ void betterGround(){
         for(int j=2; j<=30;j+=2)
             Square(i,0,-j);
     }
+}
+
+void bigWalls(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.5,0.5,0.5);
+
+    //bottom
+    glBegin(GL_POLYGON);
+    glNormal3f(0,-1,0);
+    glVertex3f(-0.5,0,0.5);
+    glVertex3f(-0.5,0,-30.5);
+    glVertex3f(0,0,-30.5);
+    glVertex3f(0,0,0);
+    glVertex3f(30,0,0);
+    glVertex3f(30,0,0.5);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(-0.5,0.7,0.5);
+    glVertex3f(-0.5,0.7,-30.5);
+    glVertex3f(0,0.7,-30.5);
+    glVertex3f(0,0.7,0);
+    glVertex3f(30,0.7,0);
+    glVertex3f(30,0.7,0.5);
+    glEnd();
+    glBegin(GL_QUAD_STRIP);
+    //left
+    glNormal3f(-1,0,0);
+    glVertex3f(-0.5,0,0.5);
+    glVertex3f(-0.5,0.7,0.5);
+    glVertex3f(-0.5,0,-30.5);
+    glVertex3f(-0.5,0.7,-30.5);
+    //top
+    glNormal3f(0,0,1);
+    glVertex3f(0,0,-30.5);
+    glVertex3f(0,0.7,-30.5);
+    //right
+    glNormal3f(1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0.7,0);
+    //bottomtop
+    glNormal3f(0,0,-1);
+    glVertex3f(30,0,0);
+    glVertex3f(30,0.7,0);
+    //bottomright
+    glNormal3f(1,0,0);
+    glVertex3f(30,0,0.5);
+    glVertex3f(30,0.7,0.5);
+    //bottombottom
+    glNormal3f(0,0,1);
+    glVertex3f(-0.5,0,0.5);
+    glVertex3f(-0.5,0.7,0.5);
+    glEnd();
+    glPopMatrix();
 }
 
 void baseWalls(double x, double y, double z, double th, double ph){
@@ -256,6 +318,220 @@ void baseWalls(double x, double y, double z, double th, double ph){
     glPopMatrix();
 }
 
+void nexus(double x, double y, double z, double dx, double dy, double dz){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glScaled(dx,dy,dz);
+    glColor3f(0.5,0.5,0.5);
+
+    //circle
+    glBegin(GL_QUAD_STRIP);
+    for(int th=0; th<=360;th+=15){
+        glNormal3f(1*Cos(th),0,1*Sin(th));
+        glVertex3f(1*Cos(th),0,1*Sin(th));
+        glVertex3f(0.9*Cos(th),0.5,0.9*Sin(th));
+    }
+    glEnd();
+    glBegin(GL_QUAD_STRIP);
+    for(int th=0; th<=360;th+=15){
+        glNormal3f(0.7*Cos(th),0,0.7*Sin(th));
+        glVertex3f(0.7*Cos(th),0,0.7*Sin(th));
+        glVertex3f(0.7*Cos(th),0.5,0.7*Sin(th));
+    }
+    glEnd();
+    glBegin(GL_QUAD_STRIP);
+    for(int th=0; th<=360;th+=15){
+        glNormal3f(0,1,0);
+        glVertex3f(0.7*Cos(th),0.5,0.7*Sin(th));
+        glVertex3f(0.9*Cos(th),0.5,0.9*Sin(th));
+    }
+    glEnd();
+
+    //crystal
+    glColor3f(0.00, 0.66, 1.00);
+    //top
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(0,0.9,0);
+    glNormal3f(0,1,0.2);
+    glVertex3f(0.35,0.7,0.35);
+    glVertex3f(-0.35,0.7,0.35);
+
+    glNormal3f(-0.2,1,0);
+    glVertex3f(-0.35,0.7,-0.35);
+
+    glNormal3f(0,1,-0.2);
+    glVertex3f(0.35,0.7,-0.35);
+    
+    glNormal3f(0.2,1,0);
+    glVertex3f(0.35,0.7,0.35);
+    glEnd();
+    //sides
+    glBegin(GL_QUAD_STRIP);
+    glNormal3f(0,-0.1,1);
+    glVertex3f(0.35,0.7,0.35);
+    glVertex3f(0.27,0,0.27);
+    glVertex3f(-0.35,0.7,0.35);
+    glVertex3f(-0.27,0,0.27);
+
+    glNormal3f(-1,-0.1,0);
+    glVertex3f(-0.35,0.7,-0.35);
+    glVertex3f(-0.27,0,-0.27);
+
+    glNormal3f(0,-0.1,-1);
+    glVertex3f(0.35,0.7,-0.35);
+    glVertex3f(0.27,0,-0.27);
+
+    glNormal3f(1,-0.1,0);
+    glVertex3f(0.35,0.7,0.35);
+    glVertex3f(0.27,0,0.27);
+    glEnd();
+    glPopMatrix();
+}
+
+void baseground(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.45, 0.53, 0.49);
+
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.2,0);
+    glVertex3f(0,0.2,-9.7);
+    glVertex3f(4.6,0.2,-9.7);
+    glVertex3f(7.25,0.2,-7.25);
+    glVertex3f(9.7,0.2,-4.6);
+    glVertex3f(9.7,0.2,0);
+    glEnd();
+    //slants
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,-0.3);
+    glVertex3f(0,0.2,-9.7);
+    glVertex3f(4.6,0.2,-9.7);
+    glVertex3f(4.8,0,-9.9);
+    glVertex3f(0,0,-9.9);
+    glEnd();
+    //mid
+    glBegin(GL_POLYGON);
+    glNormal3f(0.25,1,-0.3);
+    glVertex3f(4.6,0.2,-9.7);
+    glVertex3f(7.25,0.2,-7.25);
+    glVertex3f(7.45,0,-7.45);
+    glVertex3f(4.8,0,-9.9);
+    glEnd();
+    glBegin(GL_POLYGON);
+    glNormal3f(0.3,1,-0.25);
+    glVertex3f(9.7,0.2,-4.6);
+    glVertex3f(7.25,0.2,-7.25);
+    glVertex3f(7.45,0,-7.45);
+    glVertex3f(9.9,0,-4.8);
+    glEnd();
+    //bot
+    glBegin(GL_POLYGON);
+    glNormal3f(0.3,1,0);
+    glVertex3f(9.7,0.2,0);
+    glVertex3f(9.7,0.2,-4.6);
+    glVertex3f(9.9,0,-4.8);
+    glVertex3f(9.9,0,0);
+    glEnd();
+    glPopMatrix();
+}
+
+void lanes(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.26, 0.36, 0.00);
+
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(0,0.15,-30);
+    glVertex3f(5,0.15,-25);
+    glVertex3f(4,0.15,-23);
+    glVertex3f(4,0.15,0);
+    glVertex3f(0,0.15,0);
+    glEnd();
+    //mid
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0,1,0);
+    glVertex3f(8,0.15,-6);
+    glVertex3f(0,0.15,0);
+    glVertex3f(0,0.15,-4);
+    glVertex3f(4,0.15,-7);
+    glVertex3f(4,0.15,-12);
+    glVertex3f(8,0.15,-11);
+    glVertex3f(13.5,0.15,-16.5);
+    glVertex3f(16.5,0.15,-13.5);
+    glVertex3f(11,0.15,-8);
+    glVertex3f(12,0.15,-4);
+    glVertex3f(7,0.15,-4);
+    glVertex3f(4,0.15,0);
+    glVertex3f(0,0.15,0);
+    glEnd();
+    //bot
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(30,0.15,0);
+    glVertex3f(25,0.15,-5);
+    glVertex3f(23,0.15,-4);
+    glVertex3f(0,0.15,-4);
+    glVertex3f(0,0.15,0);
+    glEnd();
+    glPopMatrix();
+    //slants
+    //mid
+    glColor3f(0.36, 0.34, 0.00);
+    glBegin(GL_POLYGON);
+    glNormal3f(-0.1,1,-0.1);
+    glVertex3f(8,0.15,-11);
+    glVertex3f(13.5,0.15,-16.5);
+    glVertex3f(13,0,-17);
+    glVertex3f(7.5,0,-11.5);
+    glEnd();
+    glBegin(GL_POLYGON);
+    glNormal3f(0.1,1,0.1);
+    glVertex3f(11,0.15,-8);
+    glVertex3f(16.5,0.15,-13.5);
+    glVertex3f(17,0,-13);
+    glVertex3f(11.5,0,-7.5);
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0.1,1,0.1);
+    glVertex3f(4,0.15,-23);
+    glVertex3f(4,0.15,-21);
+    glVertex3f(4.5,0,-20.5);
+    glVertex3f(4.5,0,-22.5);
+    glVertex3f(5.5,0,-24.5);
+    glVertex3f(5,0.15,-25);
+    glEnd();
+    //bot
+    glBegin(GL_POLYGON);
+    glNormal3f(-0.1,1,-0.1);
+    glVertex3f(25,0.15,-5);
+    glVertex3f(23,0.15,-4);
+    glVertex3f(22.5,0,-4.5);
+    glVertex3f(24.5,0,-5.5);
+    glEnd();
+}
+
 void red1(double x, double y, double z, double th){
     float white[] = {1,1,1,1};
     float black[] = {0,0,0,1};
@@ -265,7 +541,7 @@ void red1(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -324,7 +600,7 @@ void red2(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -388,7 +664,7 @@ void red3(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottomback
     glBegin(GL_POLYGON);
@@ -501,7 +777,7 @@ void red4(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottomtop
     glBegin(GL_POLYGON);
@@ -595,7 +871,7 @@ void red5(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -652,7 +928,7 @@ void red6(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottomleft
     glBegin(GL_POLYGON);
@@ -791,7 +1067,7 @@ void red7(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottomright
     glBegin(GL_POLYGON);
@@ -975,7 +1251,7 @@ void red8(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1032,7 +1308,7 @@ void red9(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1089,7 +1365,7 @@ void red10(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1149,6 +1425,53 @@ void red10(double x, double y, double z, double th){
     glPopMatrix();
 }
 
+void redground(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.12, 0.30, 0.06);
+
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(-3.5,0.151,7);
+    glVertex3f(-5,0.151,4.5);
+    glVertex3f(0,0.151,0);
+    glVertex3f(4.25,0.151,3);
+    glVertex3f(4.5,0.151,5);
+    glEnd();
+    //bottom
+    glBegin(GL_POLYGON);
+    glVertex3f(9.5,0.151,9.5);
+    glVertex3f(-3.5,0.151,9.75);
+    glVertex3f(-3.5,0.151,7);
+    glVertex3f(4,0.151,5);
+    glVertex3f(6.5,0.151,6);
+    glVertex3f(7.75,0.151,5);
+    glEnd();
+    //slants
+    glBegin(GL_POLYGON);
+    glNormal3f(0.2,1,-0.2);
+    glVertex3f(0,0.151,0);
+    glVertex3f(4.25,0.151,3);
+    glVertex3f(4.35,0,2.9);
+    glVertex3f(0.1,0,-0.1);
+    glEnd();
+    glBegin(GL_POLYGON);
+    glNormal3f(0.2,1,-0.2);
+    glVertex3f(9.5,0.151,9.5);
+    glVertex3f(7.75,0.151,5);
+    glVertex3f(7.85,0,4.9);
+    glVertex3f(9.6,0,9.4);
+    glEnd();
+    glPopMatrix();
+}
+
 void blue1(double x, double y, double z, double th){
     float white[] = {1,1,1,1};
     float black[] = {0,0,0,1};
@@ -1158,7 +1481,7 @@ void blue1(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1227,7 +1550,7 @@ void blue2(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottomback
     glBegin(GL_POLYGON);
@@ -1357,7 +1680,7 @@ void blue3(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1456,7 +1779,7 @@ void blue4(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1531,7 +1854,7 @@ void blue5(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottomback
     glBegin(GL_POLYGON);
@@ -1643,7 +1966,7 @@ void blue6(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottom
     glBegin(GL_POLYGON);
@@ -1730,7 +2053,7 @@ void blue7(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottomback
     glBegin(GL_POLYGON);
@@ -1895,7 +2218,7 @@ void blue8(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
 
     //bottomtop
     glBegin(GL_POLYGON);
@@ -2009,6 +2332,39 @@ void blue8(double x, double y, double z, double th){
     glPopMatrix();
 }
 
+void blueground(double x, double y, double z, double th){
+    float white[] = {1,1,1,1};
+    float black[] = {0,0,0,1};
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glRotated(th,0,1,0);
+    glColor3f(0.00, 0.25, 0.16);
+
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    glVertex3f(3,0.151,4.5);
+    glVertex3f(9,0.151,6.75);
+    glVertex3f(4,0.151,11.5);
+    glVertex3f(-0.5,0.151,10.5);
+    glVertex3f(-0.5,0.151,1);
+    glVertex3f(0.5,0.151,0);
+    glEnd();
+    //slants
+    glBegin(GL_POLYGON);
+    glNormal3f(0.2,1,-0.2);
+    glVertex3f(3,0.151,4.5);
+    glVertex3f(9,0.151,6.75);
+    glVertex3f(9.1,0,6.65);
+    glVertex3f(3.1,0,4.4);
+    glVertex3f(0.6,0,0);
+    glVertex3f(0.5,0.151,0);
+    glEnd();
+    glPopMatrix();
+}
+
 void river1(double x, double y, double z, double th){
     float white[] = {1,1,1,1};
     float black[] = {0,0,0,1};
@@ -2018,7 +2374,7 @@ void river1(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.32, 0.41, 0.49);
     
     //bottom
     glBegin(GL_POLYGON);
@@ -2105,7 +2461,7 @@ void river2(double x, double y, double z, double th){
     glPushMatrix();
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
-    glColor3f(0.5,0.5,0.5);
+    glColor3f(0.44, 0.50, 0.34);
     
     //bottom
     glBegin(GL_POLYGON);
@@ -2392,8 +2748,27 @@ void tower(double x, double y, double z, double th){
     glRotated(th,0,1,0);
     glColor3f(0.5,0.5,0.5);
     
+    //bottom
     glBegin(GL_POLYGON);
-    
+    glNormal3f(0,-1,0);
+    for(int th=0; th<=360;th+=15){
+        glVertex3f(0.3*Cos(th),0,0.3*Sin(th));
+    }
+    glEnd();
+    //top
+    glBegin(GL_POLYGON);
+    glNormal3f(0,1,0);
+    for(int th=0; th<=360;th+=15){
+        glVertex3f(0.3*Cos(th),1.2,0.3*Sin(th));
+    }
+    glEnd();
+    //sides
+    glBegin(GL_QUAD_STRIP);
+    for(int th=0; th<=360;th+=15){
+        glNormal3f(0.3*Cos(th),0,0.3*Sin(th));
+        glVertex3f(0.3*Cos(th),0,0.3*Sin(th));
+        glVertex3f(0.3*Cos(th),1.2,0.3*Sin(th));
+    }
     glEnd();
     glPopMatrix();
 }
@@ -2403,8 +2778,16 @@ void riftHalf(double x, double y, double z, double th){
     glTranslated(x,y,z);
     glRotated(th,0,1,0);
 
+    lanes(0,0,0,0);
+
+    bigWalls(0,0,0,0);
+    baseground(0,0,0,0);
     baseWalls(9.5,0,-2.5,90,0);
     baseWalls(9.25,0,-5,135,0);
+    baseWalls(2.5,0.8,-9.5,0,180);
+    baseWalls(5,0.8,-9.25,315,180);
+    
+    redground(14.75,0,-12.25,0);
     red1(9.25,0,-7.2,45);
     red2(11.75,0,-5.5,0);
     red3(11.75,0,-9.75,45);
@@ -2416,8 +2799,7 @@ void riftHalf(double x, double y, double z, double th){
     red9(19.5,0,-3,0);
     red10(22.5,0,-4.75,0);
 
-    baseWalls(2.5,0.8,-9.5,0,180);
-    baseWalls(5,0.8,-9.25,315,180);
+    blueground(3.35,0,-21.75,0);
     blue1(2.56,0,-14.2,0);
     blue2(5.2,0,-13.5,0);
     blue3(6.8,0,-13.3,0);
@@ -2428,10 +2810,31 @@ void riftHalf(double x, double y, double z, double th){
     blue8(3.35,0,-21.75,0);
 
     river1(10,0,-16.25,0);
-    river2(13,0,-19,0);
+    river2(13.25,0,-19.25,-10);
 
     pit(18.5,0,-9.5,0);
 
+    //nexus
+    nexus(2.3,0,-2.3,1,1,1);
+    //inhibs
+    nexus(1.25,0,-7.5,0.5,1,0.5);
+    nexus(5.75,0,-5.75,0.5,1,0.5);
+    nexus(7.5,0,-1.25,0.5,1,0.5);
+    //nexustowers
+    tower(4,0,-3,0);
+    tower(3,0,-4,0);
+    //inhibtowers
+    tower(1.25,0,-8.5,0);
+    tower(6.5,0,-6.5,0);
+    tower(8.5,0,-1.25,0);
+    //tiertwo
+    tower(2,0,-13,0);
+    tower(9.4,0,-8.1,0);
+    tower(14,0,-1.75,0);
+    //tierone
+    tower(0.75,0,-20.2,0);
+    tower(11.2,0,-12.3,0);
+    tower(22,0,-0.8,0);
     glPopMatrix();
 }
 
@@ -2682,13 +3085,14 @@ void display()
 
         float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
         glColor3f(1,1,1);
-        if(mode != 22) {
+        if(mode != 24) {
+            eyeX=0, eyeZ=0;
             distance = 5;
             Position[0] = distance*Cos(zh);
             Position[2] = distance*Sin(zh);
             ball(Position[0],Position[1],Position[2] , 0.1);
         }
-        if(mode == 22){
+        if(mode == 24){
             distance = 10;
             Position[0] = 15+distance*Cos(zh);
             Position[2] = -15+distance*Sin(zh);
@@ -2705,102 +3109,80 @@ void display()
         glLightfv(GL_LIGHT0,GL_POSITION,Position);
     }
     else glDisable(GL_LIGHTING);
-    // Ground();
-    // Krug(3,0,0,1,1,1,-5); //main big krug
-    // Krug(0,-0.225,0,0.75,0.75,0.75,10); //medium krug
-    // Krug(-0.5,-0.55,2.5,0.4,0.4,0.4,45); //small krugs
-    // Krug(1.5,-0.55,1.75,0.4,0.4,0.4,5);
-    // Walls();
 
     switch (mode)
     {
     case 0:
-        eyeX=0, eyeZ=0;
         baseWalls(0,0,0,0,0);
         break;
     case 1:
-        eyeX=0, eyeZ=0;
         red1(0,0,0,0);
         break;
     case 2:
-        eyeX=0, eyeZ=0;
         red2(0,0,0,0);
         break;
     case 3:
-        eyeX=0, eyeZ=0;
         red3(0,0,0,0);
         break;
     case 4:
-        eyeX=0, eyeZ=0;
         red4(0,0,0,0);
         break;
     case 5:
-        eyeX=0, eyeZ=0;
         red5(0,0,0,0);
         break;
     case 6:
-        eyeX=0, eyeZ=0;
         red6(0,0,0,0);
         break;
     case 7:
-        eyeX=0, eyeZ=0;
         red7(0,0,0,0);
         break;
     case 8:
-        eyeX=0, eyeZ=0;
         red8(0,0,0,0);
         break;
     case 9:
-        eyeX=0, eyeZ=0;
         red9(0,0,0,0);
         break;
     case 10:
-        eyeX=0, eyeZ=0;
         red10(0,0,0,0);
         break;
     case 11:
-        eyeX=0, eyeZ=0;
         blue1(0,0,0,0);
         break;
     case 12:
-        eyeX=0, eyeZ=0;
         blue2(0,0,0,0);
         break;
     case 13:
-        eyeX=0, eyeZ=0;
         blue3(0,0,0,0);
         break;
     case 14:
-        eyeX=0, eyeZ=0;
         blue4(0,0,0,0);
         break;
     case 15:
-        eyeX=0, eyeZ=0;
         blue5(0,0,0,0);
         break;
     case 16:
-        eyeX=0, eyeZ=0;
         blue6(0,0,0,0);
         break;
     case 17:
-        eyeX=0, eyeZ=0;
         blue7(0,0,0,0);
         break;
     case 18:
-        eyeX=0, eyeZ=0;
         blue8(0,0,0,0);
         break;
     case 19:
-        eyeX=0, eyeZ=0;
         river1(0,0,0,0);
         break;
     case 20:
-        eyeX=0, eyeZ=0;
         river2(0,0,0,0);
         break;
     case 21:
-        eyeX=0, eyeZ=0;
         pit(0,0,0,0);
+        break;
+    case 22:
+        tower(0,0,0,0);
+        break;
+    case 23:
+        nexus(0,0,0,1,1,1);
         break;
     default:
         betterGround();
@@ -2867,13 +3249,27 @@ void key(unsigned char ch,int x,int y)
     else if (ch == '0')
         ylight += 0.1;
     else if (ch == 'm'){
-        if(mode<=21) mode++;
+        if(mode<=23) mode++;
         else mode = 0;
     }
-    else if (ch == 'w') eyeZ+=0.25;
-    else if (ch == 's') eyeZ-=0.25;
-    else if (ch == 'a') eyeX-=0.25;
-    else if (ch == 'd') eyeX+=0.25;
+    else if (ch == 'c')
+        eyeX = 15, eyeZ = 15, th = 0, ph = 45, dim = 15;
+    else if (ch == 'w') {
+        eyeZ+=0.25*Cos(th);
+        eyeX+=0.25*Sin(th);
+    }
+    else if (ch == 's') {
+        eyeZ-=0.25*Cos(th);
+        eyeX-=0.25*Sin(th);
+    }
+    else if (ch == 'a') {
+        eyeX-=0.25*Cos(th);
+        eyeZ+=0.25*Sin(th);
+    } 
+    else if (ch == 'd') {
+        eyeX+=0.25*Cos(th);
+        eyeZ-=0.25*Sin(th);
+    }
     glutIdleFunc(move?idle:NULL);
     Project();
     glutPostRedisplay();

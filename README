@@ -6,10 +6,22 @@ All:
     = fov up
     Arrow keys move camera
     l light on/off
-    s stop/start the light movement
-    . rotate light clockwise
-    , rotate light counterclockwise
+    1 stop/start the light movement
+    . rotate light clockwise when stopped
+    , rotate light counterclockwise when stopped
     9 lower light height
     0 raise light height
     m to change mode
-    
+    w move forward
+    s move backward
+    a move left
+    d move right
+    c to center the map
+
+
+    mapwithgrid.png is what I used as a reference
+    I didn't have time to fully implement the monsters or textures because I didn't do texcoords while I made the objects.
+
+    I think the map is laid out well based on the reference.  I spent a lot of time making and laying out the objects as accurately as I could.  I also think it looks pretty good with just plain colors even though I don't have textures.  The lighting also works well with all the objects.
+
+    I spent around 42 hours on this project, but I wasn't really keeping track.
